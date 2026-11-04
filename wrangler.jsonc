@@ -9,6 +9,16 @@
 	"observability": {
 		"enabled": true
 	},
+	"ratelimits": [
+    {
+      "name": "API_RATE_LIMITER",
+      "namespace_id": "1001",
+      "simple": {
+        "limit": 4,
+        "period": 60
+      }
+    }
+  ],
 	"placement": { "mode": "smart" },
 	"vars": {
     "API_URL": "https://tinyr.at"

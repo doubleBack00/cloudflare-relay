@@ -2,6 +2,16 @@ import { Router, type Context } from "cloudworker-router";
 
 const router = new Router<Env>();
 
+router.use(async (ctx, next) => {
+  const ipAddress = ctx.request.headers.get("cf-connecting-ip") ?? "";
+  const { success } = await ctx.env.API_RATE_LIMITER.limit({ key: ipAddress });
+  if (!success) {
+    return new Response(null, { status: 429 });
+  }
+
+  return await next();
+});
+
 const apiHandler = async (ctx: Context<Env>): Promise<Response> => {
   const requestUrl = new URL(ctx.request.url);
   const upstreamUrl = new URL(ctx.env.API_URL);
