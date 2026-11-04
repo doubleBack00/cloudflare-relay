@@ -1,4 +1,5 @@
 interface EnvBindings {
+  API_URL: string;
   API_KEY: string;
 }
 

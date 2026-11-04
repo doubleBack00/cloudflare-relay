@@ -2,8 +2,6 @@ import { Router, type Context } from "cloudworker-router";
 
 const router = new Router<Env>();
 
-const isLocal = (request: Request): boolean => ["localhost", "127.0.0.1"].includes(new URL(request.url).hostname);
-
 const apiHandler = async (ctx: Context<Env>): Promise<Response> => {
   return Response.json({ message: "Hello World" }, { status: 200 });
 };
