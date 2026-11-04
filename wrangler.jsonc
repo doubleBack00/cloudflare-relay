@@ -9,7 +9,10 @@
 	"observability": {
 		"enabled": true
 	},
-	"placement": { "mode": "smart" }
+	"placement": { "mode": "smart" },
+	"vars": {
+    "API_URL": "https://tinyr.at"
+  },
 	/**
 	 * Static Assets
 	 * https://developers.cloudflare.com/workers/static-assets/binding/
