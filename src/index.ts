@@ -4,8 +4,8 @@ const router = new Router<Env>();
 
 router.use(async (ctx, next) => {
   const ipAddress = ctx.request.headers.get("cf-connecting-ip") ?? "";
-  const { success } = await ctx.env.API_RATE_LIMITER.limit({ key: ipAddress });
-  if (!success) {
+  const { success: wasAllowed } = await ctx.env.API_RATE_LIMITER.limit({ key: ipAddress });
+  if (!wasAllowed) {
     return new Response(null, { status: 429 });
   }
 
