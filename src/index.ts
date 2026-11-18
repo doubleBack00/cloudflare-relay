@@ -1,10 +1,17 @@
-import { Router, type Context } from "cloudworker-router";
+import { Router } from 'cloudworker-router';
+
+import type { Context } from 'cloudworker-router';
+
+import { setClientLocationHeaders } from './geolocation';
 
 const router = new Router<Env>();
 
 router.use(async (ctx, next) => {
-  const ipAddress = ctx.request.headers.get("cf-connecting-ip") ?? "";
-  const { success: wasAllowed } = await ctx.env.API_RATE_LIMITER.limit({ key: ipAddress });
+  const ipAddress = ctx.request.headers.get('cf-connecting-ip') ?? '';
+  const { success: wasAllowed } = await ctx.env.API_RATE_LIMITER.limit({
+    key: ipAddress,
+  });
+
   if (!wasAllowed) {
     return new Response(null, { status: 429 });
   }
@@ -16,7 +23,7 @@ const apiHandler = async (ctx: Context<Env>): Promise<Response> => {
   const requestUrl = new URL(ctx.request.url);
   const upstreamUrl = new URL(ctx.env.API_URL);
 
-  const basePath = upstreamUrl.pathname.endsWith("/")
+  const basePath = upstreamUrl.pathname.endsWith('/')
     ? upstreamUrl.pathname.slice(0, -1)
     : upstreamUrl.pathname;
 
@@ -24,7 +31,12 @@ const apiHandler = async (ctx: Context<Env>): Promise<Response> => {
   upstreamUrl.search = requestUrl.search;
 
   const headers = new Headers(ctx.request.headers);
-  headers.set("Authorization", `Bearer ${ctx.env.API_KEY}`);
+  headers.set('Authorization', `Bearer ${ctx.env.API_KEY}`);
+  await setClientLocationHeaders(
+    headers,
+    ctx.request.headers.get('cf-connecting-ip'),
+    ctx.env.GEO_RELAY_SECRET,
+  );
 
   const upstreamRequest = new Request(upstreamUrl.toString(), {
     method: ctx.request.method,
@@ -35,7 +47,7 @@ const apiHandler = async (ctx: Context<Env>): Promise<Response> => {
   return fetch(upstreamRequest);
 };
 
-router.post("/api/delivery", apiHandler);
+router.post('/api/delivery', apiHandler);
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext) {
